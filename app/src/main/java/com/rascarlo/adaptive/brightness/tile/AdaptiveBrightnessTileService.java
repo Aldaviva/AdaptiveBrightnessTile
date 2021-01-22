@@ -94,6 +94,7 @@ public class AdaptiveBrightnessTileService extends TileService {
             if(!Settings.System.putInt(getContentResolver(), Settings.System.SCREEN_BRIGHTNESS_MODE, newMode)){
                 Log.e(getClass().getSimpleName(), "Failed to set Adaptive Brightness state due to settings database error.");
             }
+            updateTileResources();
         } catch (Settings.SettingNotFoundException e) {
             Log.e(getClass().getSimpleName(), "settings not found");
             showDialog(SETTING_NOT_FOUND_DIALOG);
