@@ -8,6 +8,7 @@ import android.app.job.JobService;
 import android.content.ComponentName;
 import android.content.Context;
 import android.provider.Settings;
+import android.util.Log;
 
 public class AdaptiveBrightnessTileJobService extends JobService {
 
@@ -17,7 +18,7 @@ public class AdaptiveBrightnessTileJobService extends JobService {
         ComponentName componentName = new ComponentName(context, AdaptiveBrightnessTileJobService.class);
         JobScheduler jobScheduler = context.getSystemService(JobScheduler.class);
         if (jobScheduler != null) {
-            jobScheduler.schedule(new JobInfo.Builder(ADAPTIVE_BRIGHTNESS_TILE_JOB_ID, componentName)
+            int result = jobScheduler.schedule(new JobInfo.Builder(ADAPTIVE_BRIGHTNESS_TILE_JOB_ID, componentName)
                     .addTriggerContentUri(new TriggerContentUri(Settings.System.getUriFor(Settings.System.SCREEN_BRIGHTNESS_MODE),
                             TriggerContentUri.FLAG_NOTIFY_FOR_DESCENDANTS))
                     .setTriggerContentMaxDelay(0)
@@ -26,6 +27,14 @@ public class AdaptiveBrightnessTileJobService extends JobService {
                     .setRequiredNetworkType(JobInfo.NETWORK_TYPE_NONE)
                     .setRequiresDeviceIdle(false)
                     .build());
+
+            if(result == JobScheduler.RESULT_SUCCESS) {
+                Log.d(AdaptiveBrightnessTileJobService.class.getSimpleName(), "Scheduled job successfully.");
+            } else {
+                Log.e(AdaptiveBrightnessTileJobService.class.getSimpleName(), "Failed to schedule job.");
+            }
+        } else {
+            Log.e(AdaptiveBrightnessTileJobService.class.getSimpleName(), "No job scheduler, not scheduling job.");
         }
     }
 
@@ -38,7 +47,9 @@ public class AdaptiveBrightnessTileJobService extends JobService {
 
     @Override
     public boolean onStartJob(JobParameters jobParameters) {
+        Log.d(getClass().getSimpleName(), "Job started, requesting tile listening state.");
         AdaptiveBrightnessTileService.requestListeningState(this, new ComponentName(this, AdaptiveBrightnessTileService.class));
+        Log.d(getClass().getSimpleName(), "Scheduling update job.");
         scheduleUpdateJob(this);
         return false;
     }
